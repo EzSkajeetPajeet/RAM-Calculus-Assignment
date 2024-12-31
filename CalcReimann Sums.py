@@ -1,3 +1,4 @@
+import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -29,18 +30,15 @@ def ram_analysis(a, b, n, ram_type):
     exact = exact_area(a, b)
     percent_error = abs((exact - area_sum) / exact) * 100
 
-    print(f"{ram_type} Area: {area_sum}")
-    print(f"Exact Area: {exact}")
-    print(f"% Error: {percent_error:.2f}%")
 
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(8, 8))
     if ram_type in ["LRAM", "RRAM", "MRAM"]:
-        plt.bar(x_points, f(x_points), width=dx, align='edge', color='skyblue', edgecolor='black', label=f"{ram_type} Rectangles")
+        plt.bar(x_points, f(x_points), width=dx, align='edge', color='purple', edgecolor='black', label=f"{ram_type} Rectangles")
         plt.scatter(x_points, f(x_points), color='black', zorder=5)
     elif ram_type == "TRAM":
         for i in range(n):
             plt.plot([x[i], x[i+1]], [f(x[i]), f(x[i+1])], 'b-')
-            plt.fill_between([x[i], x[i+1]], [f(x[i]), f(x[i+1])], color='skyblue', alpha=0.5, label="Trapezoid" if i == 0 else "")
+            plt.fill_between([x[i], x[i+1]], [f(x[i]), f(x[i+1])], color='yellow', alpha=0.5, label="Trapezoid" if i == 0 else "")
     x_plot = np.linspace(a, b, 500)
     plt.plot(x_plot, f(x_plot), 'r-', label="f(x) = x^2 + 4x")
 
@@ -53,15 +51,24 @@ def ram_analysis(a, b, n, ram_type):
     plt.ylabel("f(x)")
     plt.legend()
     plt.grid(True)
-    plt.show()
+    st.pyplot(plt.gcf())
 
-if __name__ == "__main__":
-    while True:
-        ram_type = input("Enter RAM type (LRAM, RRAM, MRAM, TRAM) or 'exit' to quit: ").strip().upper()
-        if ram_type == "EXIT":
-            print("Exiting the program.")
-            break
-        try:
-            ram_analysis(1, 3, 4, ram_type)
-        except ValueError as e:
-            print(e)
+
+st.title("RAM Analysis Tool")
+st.markdown("""
+This application calculates the area under a curve using Riemann Sum approximations (RAM). 
+Choose a method and parameters to analyze the function **f(x) = x² + 4x**.
+""")
+
+
+a = st.number_input("Start (a)", value=1.0)
+b = st.number_input("End (b)", value=3.0)
+n = st.number_input("Number of Rectangles (n)", min_value=1, value=4)
+ram_type = st.selectbox("RAM Type", ["LRAM", "RRAM", "MRAM", "TRAM"])
+
+
+if st.button("Run Analysis"):
+    try:
+        ram_analysis(a, b, n, ram_type)
+    except ValueError as e:
+        st.error(str(e))
